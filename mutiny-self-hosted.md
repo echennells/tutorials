@@ -2,7 +2,7 @@
 
 ## Goal
 
-To self host an instance of [Mutiny wallet] (https://www.mutinywallet.com) and access it securely from their phone over VPN. 
+To self host an instance of [Mutiny wallet](https://www.mutinywallet.com) and access it securely from your phone over VPN. 
 
 The guide assumes you have a public IP and a valid FQDN (domain name). The reason for the public IP is that it uses wireguard as the VPN to connect from your phone to your wallet.  The reason for the FQDN is iOS won't let you grant camera permissions to a website unless it has a valid TLS cert.  Camera permissions are required so you can use QR codes.
 
@@ -16,7 +16,7 @@ cache the next time you access mutiny it will sync from the postgres server.  Th
 every time you do a lightning transaction the channel state is updated, and there isn't a way that I know of to trigger a postgres backup on each update to the database.  If you accidently restore a previous version
 of the channel state you will be in a bad place and possibly (almost certinaly, lose funds).
 
-### Update the machine (if you get an error about a lock just wait a few minutes and try again)
+### Update the machine 
 ```
 sudo apt update
 sudo apt upgrade
@@ -160,10 +160,11 @@ sudo wg-quick up mutiny
 ```
 
 ### Create QR code with client settings
+```
 sudo apt install qrencode
 sudo nano wg-client.conf
 qrencode -t ansiutf8 < wg-client.conf
-
+```
 
 ### Test it out
 
@@ -173,4 +174,8 @@ Browse to https://domainname
 
 ### Troubleshooting
 - see if you can curl https://domainname from your VM
+
+### Cerbot DNS plugins
+[DNS Plugins](https://eff-certbot.readthedocs.io/en/stable/using.html#dns-plugins)
+
 
