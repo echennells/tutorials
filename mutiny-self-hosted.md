@@ -83,6 +83,20 @@ sudo rm /etc/nginx/sites-enabled/default
 sudo systemctl enable --now nginx
 ```
 
+### Get TLS certificate from letsencrypt
+
+Replace <domain name> with your domain.
+Note for this to work your DNS must point to the public IP of this VM.
+You must also have port 80 open from the internet to your VM.
+
+```
+certbot --nginx -d <domain name>
+```
+
+After you get your certificate change your DNS to point to your private IP.  The reason for this is I haven't figured out how to get wireguard to forward to the public ip.
+If anyone can figure this out please let me know so we can improve this process.  The problem with using your private IP is that certbot won't be able to renew your certificate
+in 3 months and your TLS will break.  You can renew your cert via DNS records, but it is more complicated to setup.  I will cover it as an appendix at the bottom.
+
 ### Install and configure wireguard
 
 ```
