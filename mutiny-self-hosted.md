@@ -1,8 +1,12 @@
-## Tutorial to Self-host Mutiny Wallet
+# Tutorial to Self-host Mutiny Wallet
 
-The guide assumes you have a public IP and a valid FQDN (domain name). The reason for the public IP is that it uses wireguard as the VPN to connect from your phone to your wallet.  The reason for the FQDN is iOS won't let you grant camera permissions to a website unless it has a valid TLS cert.  I am not sure about android.  Camera permissions are required so you can use QR codes.
+## Goal
 
-If you don't want to use a public IP you could use tailscale instead of wireguard but that is not covered here.
+To self host an instance of [Mutiny wallet] (https://www.mutinywallet.com) and access it securely from their phone over VPN. 
+
+The guide assumes you have a public IP and a valid FQDN (domain name). The reason for the public IP is that it uses wireguard as the VPN to connect from your phone to your wallet.  The reason for the FQDN is iOS won't let you grant camera permissions to a website unless it has a valid TLS cert.  Camera permissions are required so you can use QR codes.
+
+If you don't want to use a public IP you could use [Tailscale](https://tailscale.com) instead of wireguard but that is not covered here.
 
 This guide also assumes you want to use letencrypt (a free service) for the TLS cert.
 
@@ -12,40 +16,41 @@ cache the next time you access mutiny it will sync from the postgres server.  Th
 every time you do a lightning transaction the channel state is updated, and there isn't a way that I know of to trigger a postgres backup on each update to the database.  If you accidently restore a previous version
 of the channel state you will be in a bad place and possibly (almost certinaly, lose funds).
 
-### update the machine (if you get an error about a lock just wait a few minutes and try again)
+### Update the machine (if you get an error about a lock just wait a few minutes and try again)
 ```
 sudo apt update
 sudo apt upgrade
 ```
 
-### install docker following the two setps from this link
-https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+### Install docker following the two steps from this tutorial
+[Installing Docker on Ubuntu](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
 
+Add your user to the docker group.
 ```
 sudo usermod -aG docker $USER
 ```
 
 logout and log back in in order for usermod to take effect
 
-# install git and clone mutiny-deploy repo  
+### Install git and clone mutiny-deploy repo  
 ```
 sudo apt install git
 git clone https://github.com/MutinyWallet/mutiny-deploy.git
 ```
 
-### start mutiny containers
+### Start mutiny containers
 ```
 cd mutiny-deploy
 docker compose up -d
 ```
 
-### install and configure nginx
+### Install and configure nginx
 ```
 sudo apt install nginx
 sudo nano /etc/nginx/sites-available/mutin
 ```
 
-Use the following nginx configuration:
+Use the following nginx configuration, replacing <domain name> with your domain:
 
 ```
 map $http_upgrade $connection_upgrade {
@@ -71,6 +76,7 @@ server {
 }
 ```
 
+Enable the nginx configuration
 ```
 sudo ln -s /etc/nginx/sites-available/mutiny /etc/nginx/sites-enabled/mutiny
 sudo rm /etc/nginx/sites-enabled/default
@@ -103,16 +109,16 @@ ip addr show ens3 ( find out your local private ip, ens3 should be valid for lun
 sudo nano /etc/wireguard/mutiny.conf
 ```
 
-Enter the following config:
+Enter the following config, replacing the keys with your own values:
 
 ```
 [Interface]
-PrivateKey = privatekey-server
+PrivateKey = <privatekey-server>
 Address = 10.0.0.5/32
 ListenPort = 33333
 
 [Peer]
-PublicKey = publickey-client
+PublicKey = <publickey-client>
 AllowedIPs = 10.0.0.10/32
 ```
 
@@ -120,15 +126,15 @@ AllowedIPs = 10.0.0.10/32
 sudo nano ~/wg-client.conf
 ```
 
-Enter the following config:
+Enter the following config, replacing the keys with your own values:
 
 ```
 [Interface]
-PrivateKey = privatekey-client
+PrivateKey = <privatekey-client>
 Address = 10.0.0.10/32
 
 [Peer]
-PublicKey = publickey-server
+PublicKey = <publickey-server>
 Endpoint = <public ip of server>:33333
 AllowedIPs = <public ip of server>/32
 ```
@@ -139,11 +145,10 @@ Bring up the wireguard interface:
 sudo wg-quick up mutiny
 ```
 
-### create QR code with client settings
+### Create QR code with client settings
 sudo apt install qrencode
 sudo nano wg-client.conf
 qrencode -t ansiutf8 < wg-client.conf
-
 
 
 ### Test it out
@@ -152,6 +157,6 @@ Install wireguard app on your phone and scan the qr code.
 Browse to https://domainname
 
 
-### troubleshooting
+### Troubleshooting
 - see if you can curl https://domainname from your VM
 
