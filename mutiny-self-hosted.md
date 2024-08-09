@@ -1,4 +1,4 @@
-# Tutorial to Self-host Mutiny Wallet
+# Tutorial to Self-host Mutiny Wallet - Wireguard version
 
 ## Goal
 
@@ -47,7 +47,7 @@ docker compose up -d
 ### Install and configure nginx
 ```
 sudo apt install nginx
-sudo nano /etc/nginx/sites-available/mutin
+sudo nano /etc/nginx/sites-available/mutiny
 ```
 
 Use the following nginx configuration, replacing <domain name> with your domain:
@@ -65,6 +65,7 @@ server {
     location / {
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
+      # delete this connection upgrade line if nginx fails to start
       proxy_set_header Connection $connection_upgrade;
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
